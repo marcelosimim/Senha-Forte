@@ -19,26 +19,16 @@ struct Password {
     let value: String
 
     func isPasswordValid() -> Bool {
-        isSizeValid() && hasCharUpperCased() && hasCharLowerCased() && hasNumber() && isFirstLetterUpperCased() && hasNotSpecialCharacteres() && hasNoSequenceNumbers()
+        return isFirstLetterUpperCased() && hasCharLowerCased() && hasNumber()  && hasNotSpecialCharacteres() && hasNoSequenceNumbers() && isSizeValid()
     }
 
     private func isSizeValid() -> Bool {
         value.count > 5 && value.count < 15
     }
 
-    private func hasCharUpperCased() -> Bool {
-        for char in value {
-            if !isANumber(char) {
-                let upperCasedChar = char.uppercased().first
-                if isEqual(char, upperCasedChar) { return true }
-            }
-        }
-        return false
-    }
-
     private func hasCharLowerCased() -> Bool {
         for char in value {
-            if !isANumber(char) {
+            if isANumber(char) == nil {
                 let lowerCasedChar = char.lowercased().first
                 if isEqual(char, lowerCasedChar) { return true }
             }
@@ -48,7 +38,7 @@ struct Password {
 
     private func hasNumber() -> Bool {
         for char in value {
-            if isANumber(char) { return true }
+            if isANumber(char) != nil { return true }
         }
         return false
     }
@@ -57,7 +47,7 @@ struct Password {
         let firstChar = value.first
         let upperCasedChar = value.uppercased().first
 
-        return isEqual(upperCasedChar, firstChar) && !isANumber(firstChar)
+        return isEqual(upperCasedChar, firstChar) && (isANumber(firstChar) == nil)
     }
 
     private func hasNotSpecialCharacteres() -> Bool {
@@ -76,7 +66,9 @@ struct Password {
 
         for _ in 0...valueCopy.count-1 {
             if lastChar == nil { break }
-            if isANumber(lastChar) && isANumber(penultimateChar) { return false }
+            if let firstNumber = isANumber(penultimateChar), let secondNumber = isANumber(lastChar) {
+                if secondNumber == firstNumber + 1 { return false }
+            }
 
             lastChar = valueCopy.popLast()
             penultimateChar = valueCopy.popLast()
@@ -88,8 +80,9 @@ struct Password {
         return char1 == char2
     }
 
-    private func isANumber(_ char: Character?) -> Bool {
-        char == "1" || char == "2" || char == "3" || char == "4" || char == "5" || char == "6" || char == "7" || char == "8" || char == "9" || char == "0"
+    private func isANumber(_ char: Character?) -> Int? {
+        guard let char = char else { return nil }
+        return Int(String(describing: char))
     }
 
     private func isAValidCharacter(_ asciiValue: UInt8) -> Bool {
